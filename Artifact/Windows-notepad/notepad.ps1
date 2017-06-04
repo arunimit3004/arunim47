@@ -1,1 +1,0 @@
-﻿Install-Application -InstallerPath \\server\Software$\Notepad++\npp.6.7.8.2.Installer.exe  -InstallerParameters "/S" -RegistryKey HKLM:\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\Notepad++ -RegistryName DisplayVersion -RegistryValue 6.7.8.2 -LogPath \\Server\Software$\logfiles\

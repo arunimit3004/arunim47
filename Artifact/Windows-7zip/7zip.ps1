@@ -1,40 +1,43 @@
-﻿function install-7zip{
-$7Zip = $true;
-<#
-.Synopsis
-Installs 7-Zip for 64-bit Windows x64 (Intel 64 or AMD64)
-.Description
-This function Installs 7-Zip for 64-bit Windows x64 (Intel 64 or AMD64)
- 
-.Example
-.\install-7zip
-This example installs 7-Zip for 64-bit Windows x64 (Intel 64 or AMD64)
-#>
-$WebClient = New-Object -TypeName System.Net.WebClient;
-$7ZipUrl = ‘http://downloads.sourceforge.net/sevenzip/7z920-x64.msi';
-$7ZipInstaller = “$env:TEMP\7z920-x64.msi”;
- 
- 
-try {
- 
-$7ZipPath = Resolve-Path -Path ((Get-Item -Path HKLM:\SOFTWARE\7-Zip -ErrorAction SilentlyContinue).GetValue(“Path”) + ‘\7z.exe’);
-if (!$7ZipPath) {
-$7Zip = $false;
-}
-}
-catch {
-$7Zip = $false;
-}
- 
- 
- 
-if (!$7Zip) {
-$WebClient.DownloadFile($7ZipUrl,$7ZipInstaller);
-Start-Process -Wait -FilePath $7ZipInstaller;
-Remove-Item -Path $7ZipInstaller -Force -ErrorAction SilentlyContinue;
+﻿# Silent Install 7-Zip
+# http://www.7-zip.org/download.html 
+
+# Path for the workdir
+$workdir = "c:\installer\"
+
+# Check if work directory exists if not create it
+
+If (Test-Path -Path $workdir -PathType Container)
+{ Write-Host "$workdir already exists" -ForegroundColor Red}
+ELSE
+{ New-Item -Path $workdir  -ItemType directory }
+
+# Download the installer
+
+$source = "http://www.7-zip.org/a/7z1604-x64.msi"
+$destination = "$workdir\7-Zip.msi"
+
+# Check if Invoke-Webrequest exists otherwise execute WebClient
+
+if (Get-Command 'Invoke-Webrequest')
+{
+     Invoke-WebRequest $source -OutFile $destination
 }
 else
 {
-   Write-Warning &amp;quot;7 Zip already installed&amp;quot; 
+    $WebClient = New-Object System.Net.WebClient
+    $webclient.DownloadFile($source, $destination)
 }
-}
+
+Invoke-WebRequest $source -OutFile $destination 
+
+# Start the installation
+
+msiexec.exe /i "$workdir\7-Zip.msi" /qb
+
+# Wait XX Seconds for the installation to finish
+
+Start-Sleep -s 35
+
+# Remove the installer
+
+rm -Force $workdir\7*
